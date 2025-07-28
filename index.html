@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cute Homepage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <div id="sparkle-container"></div>
+    <div id="petal-container"></div>
+
+    <div id="easter-egg-overlay">
+        <div id="easter-egg-content">
+            <h2 id="easter-egg-question">What's 9 + 10?</h2>
+            <div id="easter-egg-answers">
+                <button class="answer-btn wrong-answer">19</button>
+                <button class="answer-btn" id="correct-answer">21</button>
+                <button class="answer-btn wrong-answer">69</button>
+                <button class="answer-btn wrong-answer">910</button>
+            </div>
+            <img id="easter-egg-result-image" src="" alt="Result">
+        </div>
+        <audio id="easter-egg-music" src="eastereggmusic.mp3" loop></audio>
+        <audio id="easter-egg-right" src="eastereggright.mp3"></audio>
+        <audio id="easter-egg-wrong" src="eastereggwrong.mp3"></audio>
+    </div>
+
+    <div id="welcome-overlay">
+        <div class="welcome-content">
+            <div class="enter-button-wrapper">
+                <button id="enter-button">♡ Click to Enter ♡</button>
+            </div>
+            <p class="terms-notice">By clicking "Enter", you agree to the terms and conditions of use.</p>
+        </div>
+    </div>
+
+    <header>
+        <h1>✨ My Cute Homepage ✨</h1>
+        <p>Welcome to my personal space <button id="easter-egg-two-trigger" title="Secret Video">♡</button></p>
+    </header>
+
+    <div class="main-container">
+        <aside class="left-column">
+            <div id="settings-card" class="card card-animate">
+                <h2>Settings</h2>
+                <div class="button-row">
+                    <button class="settings-tab-btn" data-setting="theme" title="Themes"></button>
+                    <button class="settings-tab-btn" data-setting="effects" title="Effects Settings"></button>
+                    <button class="settings-tab-btn" data-setting="sound" title="Sound Settings"></button>
+                    <button id="easter-egg-button" title="?">
+                        <span>?</span>
+                    </button>
+                </div>
+                <div id="settings-content">
+                    <div id="theme-settings" class="settings-panel">
+                        <button class="theme-choice-btn" data-theme="sakura">Sakura</button>
+                        <button class="theme-choice-btn" data-theme="night">Night</button>
+                        <button class="theme-choice-btn" data-theme="starfield">Starfield</button>
+                    </div>
+                    <div id="effects-settings" class="settings-panel">
+                        <div class="slider-container">
+                            <label id="effect-amount-label" for="effect-amount">Amount</label>
+                            <input type="range" id="effect-amount" min="0" max="100" value="50">
+                        </div>
+                        <div class="slider-container">
+                            <label id="effect-speed-label" for="effect-speed">Speed</label>
+                            <input type="range" id="effect-speed" min="5" max="25" value="15">
+                        </div>
+                    </div>
+                    <div id="sound-settings" class="settings-panel">
+                        <button id="bgm-mute-button" class="settings-choice-btn"></button>
+                   </div>
+                </div>
+            </div>
+
+            <div class="card card-animate">
+                <h2>About Me</h2>
+                <p>Hi there! Welcome to my little corner of the internet. I love creating cute things, playing games, and sharing moments from my life.</p>
+            </div>
+             <div class="card card-animate">
+                <h2>My Gallery</h2>
+                <p>Looking for my pictures? They have their own page!</p>
+                <a href="gallery.html" class="button">Go to Gallery</a>
+            </div>
+
+            <div id="video-card" class="card card-animate">
+                <h2>Video Player</h2>
+                <div id="video-player-container">
+                    <video id="custom-video" src=""></video>
+                    <div class="video-overlay">
+                        <div class="video-play-icon"></div>
+                    </div>
+                    <div id="video-controls">
+                        <button id="video-play-pause-btn" title="Play/Pause"></button>
+                        <input type="range" id="video-seek-bar" value="0" step="0.1">
+                        <span id="video-time">0:00 / 0:00</span>
+                        <div id="video-volume-container">
+                            <button id="video-mute-btn" title="Mute"></button>
+                            <input type="range" id="video-volume-bar" value="1" min="0" max="1" step="0.01">
+                        </div>
+                        <button id="fullscreen-btn" title="Fullscreen"></button>
+                    </div>
+                </div>
+                <label for="mp4-upload" class="mp4-upload-label button">Choose a Video</label>
+                <input type="file" id="mp4-upload" accept=".mp4" hidden>
+            </div>
+        </aside>
+
+        <main class="right-column">
+             <div class="card card-animate kofi-card">
+                <h2>Support Me on Ko-fi</h2>
+                <p>If you like my work, please consider supporting me!</p>
+                <a href="https://ko-fi.com/xloona" class="kofi-button" target="_blank" rel="noopener noreferrer">
+                    <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi Cup">
+                    <span>Support Me</span>
+                </a>
+            </div>
+            <div class="card card-animate">
+                <h2>Leave a Comment</h2>
+                <form id="comment-form">
+                    <input type="text" id="comment-name" placeholder="Your Name" required>
+                    <textarea id="comment-text" placeholder="Write something nice..." rows="4" required></textarea>
+                    <button type="submit" class="button">Post Comment</button>
+                </form>
+                <div id="comment-log"></div>
+            </div>
+            <div class="card card-animate">
+                <h2>Music Player</h2>
+                <div id="custom-audio-player">
+                    <p id="player-prompt">Upload an .mp3 to start the music player!</p>
+                    <div id="song-title-display"></div>
+                    <div id="player-controls">
+                        <button id="play-pause-btn" title="Play/Pause"></button>
+                        <input type="range" id="seek-bar" value="0" step="1" title="Seek">
+                        <div id="volume-container">
+                            <button id="player-mute-button" title="Mute Music"></button>
+                            <input type="range" id="volume-bar" value="1" min="0" max="1" step="0.01" title="Volume">
+                        </div>
+                    </div>
+                </div>
+                <label for="mp3-upload" class="mp3-upload-label button">Choose a Song</label>
+                <input type="file" id="mp3-upload" accept=".mp3" hidden>
+            </div>
+        </main>
+    </div>
+
+    <audio id="audio-player" src="" crossOrigin="anonymous"></audio>
+    <audio id="background-music" src="backgroundmusic.mp3" loop></audio>
+    <script src="script.js"></script>
+</body>
+</html>
