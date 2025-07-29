@@ -14,6 +14,10 @@
     <div id="cursor"></div>
     <div id="sparkle-container"></div>
     <div id="petal-container"></div>
+    <div id="liminal-video-container">
+        <video id="liminal-background-video-blurred" preload="auto" muted playsinline></video>
+        <video id="liminal-background-video-main" preload="auto" muted playsinline></video>
+    </div>
 
     <div id="easter-egg-overlay">
         <div id="easter-egg-content">
@@ -26,9 +30,9 @@
             </div>
             <img id="easter-egg-result-image" src="" alt="Result">
         </div>
-        <audio id="easter-egg-music" src="eastereggmusic.mp3" loop></audio>
-        <audio id="easter-egg-right" src="eastereggright.mp3"></audio>
-        <audio id="easter-egg-wrong" src="eastereggwrong.mp3"></audio>
+        <audio id="easter-egg-music" src="eastereggmusic.mp3" loop preload="auto"></audio>
+        <audio id="easter-egg-right" src="eastereggright.mp3" preload="auto"></audio>
+        <audio id="easter-egg-wrong" src="eastereggwrong.mp3" preload="auto"></audio>
     </div>
 
     <div id="welcome-overlay">
@@ -40,12 +44,12 @@
         </div>
     </div>
 
-    <header>
+    <header id="main-header">
         <h1>✨ My Cute Homepage ✨</h1>
         <p>Welcome to my personal space <button id="easter-egg-two-trigger" title="Secret Video">♡</button></p>
     </header>
 
-    <div class="main-container">
+    <div id="main-content-area" class="main-container">
         <aside class="left-column">
             <div id="settings-card" class="card card-animate">
                 <h2>Settings</h2>
@@ -62,6 +66,8 @@
                         <button class="theme-choice-btn" data-theme="sakura">Sakura</button>
                         <button class="theme-choice-btn" data-theme="night">Night</button>
                         <button class="theme-choice-btn" data-theme="starfield">Starfield</button>
+                        <button class="theme-choice-btn" data-theme="bubbletea">Bubbletea</button>
+                        <button class="theme-choice-btn" data-theme="liminal">Liminal</button>
                     </div>
                     <div id="effects-settings" class="settings-panel">
                         <div class="slider-container">
@@ -72,9 +78,40 @@
                             <label id="effect-speed-label" for="effect-speed">Speed</label>
                             <input type="range" id="effect-speed" min="5" max="25" value="15">
                         </div>
+                        <div class="slider-container">
+                            <label for="sparkle-frequency">Sparkle Frequency</label>
+                            <input type="range" id="sparkle-frequency" min="0" max="1" step="0.05" value="0.5">
+                        </div>
+                        <div class="slider-container">
+                            <label for="card-animation-speed">Card Animation Speed</label>
+                            <input type="range" id="card-animation-speed" min="0" max="100" value="50">
+                        </div>
+                        <button id="toggle-background-effects" class="settings-choice-btn"></button>
+
+                        <h3 style="margin-bottom: 0.5rem; margin-top: 1.5rem; color: var(--accent-color);">Background Filter</h3>
+                        <div class="button-row" id="filter-choice-buttons">
+                            <button class="settings-choice-btn filter-btn" data-filter="none">None</button>
+                            <button class="settings-choice-btn filter-btn" data-filter="sepia">Sepia</button>
+                            <button class="settings-choice-btn filter-btn" data-filter="grayscale">Grayscale</button>
+                            <button class="settings-choice-btn filter-btn" data-filter="hue-rotate">Hue Shift</button>
+                            <button class="settings-choice-btn filter-btn" data-filter="blur">Blur</button>
+                            <button class="settings-choice-btn filter-btn" data-filter="contrast">Contrast</button>
+                        </div>
+                        <div class="slider-container" style="margin-top: 1rem;">
+                            <label for="filter-intensity">Filter Intensity</label>
+                            <input type="range" id="filter-intensity" min="0" max="1" step="0.01" value="0">
+                        </div>
+
+                        <h3 style="margin-bottom: 0.5rem; margin-top: 1.5rem; color: var(--accent-color);" id="hide-ui-heading">UI Visibility</h3>
+                        <button id="toggle-ui-btn" class="settings-choice-btn">Hide UI</button>
                     </div>
                     <div id="sound-settings" class="settings-panel">
                         <button id="bgm-mute-button" class="settings-choice-btn"></button>
+                        <div class="slider-container">
+                            <label for="sfx-volume">Sound Effects Volume</label>
+                            <input type="range" id="sfx-volume" min="0" max="1" step="0.01" value="0.5">
+                        </div>
+                        <button id="click-sound-toggle" class="settings-choice-btn"></button>
                    </div>
                 </div>
             </div>
@@ -85,14 +122,14 @@
             </div>
              <div class="card card-animate">
                 <h2>My Gallery</h2>
-                <p>Looking for my pictures? They have their own page!</p>
-                <a href="gallery.html" class="button">Go to Gallery</a>
+                <p>Looking for my pictures? They have their own section now!</p>
+                <button id="open-gallery-btn" class="button">Go to Gallery</button>
             </div>
 
             <div id="video-card" class="card card-animate">
                 <h2>Video Player</h2>
                 <div id="video-player-container">
-                    <video id="custom-video" src=""></video>
+                    <video id="custom-video" src="" preload="auto"></video>
                     <div class="video-overlay">
                         <div class="video-play-icon"></div>
                     </div>
@@ -116,11 +153,14 @@
              <div class="card card-animate kofi-card">
                 <h2>Support Me on Ko-fi</h2>
                 <p>If you like my work, please consider supporting me!</p>
+                <!-- START: Custom Ko-fi button using your theme's accent color -->
                 <a href="https://ko-fi.com/xloona" class="kofi-button" target="_blank" rel="noopener noreferrer">
-                    <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi Cup">
+                    <img src="koficup.png" alt="Ko-fi Cup">
                     <span>Support Me</span>
                 </a>
+                <!-- END: Custom Ko-fi button -->
             </div>
+            
             <div class="card card-animate">
                 <h2>Leave a Comment</h2>
                 <form id="comment-form">
@@ -140,7 +180,7 @@
                         <input type="range" id="seek-bar" value="0" step="1" title="Seek">
                         <div id="volume-container">
                             <button id="player-mute-button" title="Mute Music"></button>
-                            <input type="range" id="volume-bar" value="1" min="0" max="1" step="0.01" title="Volume">
+                            <input type="range" id="volume-bar" value="1" min="0" max="1" step="0.01">
                         </div>
                     </div>
                 </div>
@@ -150,8 +190,39 @@
         </main>
     </div>
 
-    <audio id="audio-player" src="" crossOrigin="anonymous"></audio>
-    <audio id="background-music" src="backgroundmusic.mp3" loop></audio>
+    <div id="in-page-gallery-modal">
+        <header>
+            <h1>🖼️ My Cute Gallery 🖼️</h1>
+            <p>A collection of my favorite moments and creations.</p>
+        </header>
+        <div class="main-container">
+            <div class="back-button-container">
+                <button id="close-gallery-btn-top" class="button">← Close Gallery</button>
+            </div>
+            <div id="gallery-grid">
+            </div>
+            <div class="back-button-container">
+                <button id="close-gallery-btn-bottom" class="button">← Close Gallery</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox-overlay">
+        <div id="lightbox-content">
+            <img id="lightbox-image" src="" alt="Full size image">
+            <button id="lightbox-close-btn" class="button">Close</button>
+        </div>
+    </div>
+
+    <button id="restore-ui-btn" class="button">Show UI</button>
+
+    <audio id="audio-player" src="" crossOrigin="anonymous" preload="auto"></audio>
+    <audio id="background-music" src="backgroundmusic.mp3" loop preload="auto"></audio>
+    <audio id="click-sfx" src="click.mp3" preload="auto"></audio>
+    <audio id="sparkle-sfx" src="sparkle.mp3" preload="auto"></audio>
+
+    <audio id="liminal-background-music" preload="auto"></audio>
+
     <script src="script.js"></script>
 </body>
 </html>
