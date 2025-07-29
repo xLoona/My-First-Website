@@ -1,6 +1,6 @@
 // js/features/players.js
 import { getElement, SVG_ICONS } from '../utils/helpers.js';
-import { updateBackgroundMusicState, audioPlayer, videoPlayer } from '../core/audio-manager.js'; // Import audioPlayer and videoPlayer directly
+import { updateBackgroundMusicState } from '../core/audio-manager.js'; // Import only necessary functions/references
 
 let playerPrompt;
 let mp3Upload;
@@ -12,6 +12,7 @@ let songTitleDisplay;
 let playerControls;
 
 let videoPlayerContainer;
+let videoPlayer; // Local reference to custom video player from core
 let videoPlayPauseBtn;
 let videoSeekBar;
 let videoTimeDisplay;
@@ -20,13 +21,14 @@ let videoVolumeBar;
 let fullscreenBtn;
 let mp4Upload;
 
+// These are now handled internally within Players module
 let currentAudioObjectURL = null;
 let currentVideoObjectURL = null;
 
 
 export function init(playerPromptRef, audioPlayerRef, mp3UploadRef, playPauseBtnRef, seekBarRef, volumeBarRef, playerMuteButtonRef, songTitleDisplayRef, playerControlsRef, videoPlayerContainerRef, videoPlayerRef, videoPlayPauseBtnRef, videoSeekBarRef, videoTimeDisplayRef, videoMuteBtnRef, videoVolumeBarRef, fullscreenBtnRef, mp4UploadRef) {
     playerPrompt = playerPromptRef;
-    // audioPlayer, videoPlayer are imported directly from audio-manager.js now
+    audioPlayer = audioPlayerRef; // Get reference from main, not import directly.
     mp3Upload = mp3UploadRef;
     playPauseBtn = playPauseBtnRef;
     seekBar = seekBarRef;
@@ -36,7 +38,7 @@ export function init(playerPromptRef, audioPlayerRef, mp3UploadRef, playPauseBtn
     playerControls = playerControlsRef;
 
     videoPlayerContainer = videoPlayerContainerRef;
-    // videoPlayer is imported directly
+    videoPlayer = videoPlayerRef; // Get reference from main, not import directly.
     videoPlayPauseBtn = videoPlayPauseBtnRef;
     videoSeekBar = videoSeekBarRef;
     videoTimeDisplay = videoTimeDisplayRef;
@@ -64,25 +66,31 @@ export function init(playerPromptRef, audioPlayerRef, mp3UploadRef, playPauseBtn
 
 function setupAudioPlayerListeners() {
     if (mp3Upload) {
-        mp3Upload.addEventListener('change', async (e) => {
+        mp3Upload.addEventListener('change', async (e) => { // Made async to await fade
             const file = e.target.files[0];
             if (!file) return;
 
             if (file.type === "audio/mpeg") {
-                if (currentAudioObjectURL) URL.revokeObjectURL(currentAudioObjectURL);
+                // Revoke previous object URL if it exists
+                if (currentAudioObjectURL) {
+                    URL.revokeObjectURL(currentAudioObjectURL);
+                }
                 currentAudioObjectURL = URL.createObjectURL(file);
                 audioPlayer.src = currentAudioObjectURL;
                 audioPlayer.load(); // Load the new source
+
+                // Set loop to false for user-uploaded audio
+                audioPlayer.loop = false;
 
                 // Update UI elements immediately
                 if (playerPrompt) playerPrompt.style.display = 'none';
                 if (songTitleDisplay) { songTitleDisplay.textContent = file.name; songTitleDisplay.style.display = 'flex'; }
                 if (playerControls) playerControls.style.display = 'flex';
                 
-                audioPlayer.play().catch(error => console.error("MP3 play failed:", error)); // Play instantly
-
-                // Fade out BGM in parallel
+                // Play instantly and then fade out BGM in parallel
+                audioPlayer.play().catch(error => console.error("MP3 play failed:", error)); 
                 updateBackgroundMusicState(); 
+
             } else {
                 alert("Please select a valid .mp3 file.");
             }
@@ -129,12 +137,16 @@ function setupVideoPlayerListeners() {
                 videoPlayer.load();
                 if (videoPlayerContainer) videoPlayerContainer.classList.add('video-player-loading');
                 
-                videoPlayer.play().catch(error => { // Play instantly
+                // Set loop to false for user-uploaded video
+                videoPlayer.loop = false;
+
+                // Play instantly and then fade out BGM in parallel
+                videoPlayer.play().catch(error => { 
                     console.error("Video play failed:", error);
                     alert("Browser autoplay policy blocked video playback. Please click the video area to play.");
                     if (videoPlayerContainer) { videoPlayerContainer.classList.add('paused'); videoPlayerContainer.classList.remove('video-player-loading'); }
                 });
-                updateBackgroundMusicState(); // Then fade out BGM in parallel
+                updateBackgroundMusicState(); 
             } else {
                 alert("Please select a valid .mp4 file.");
             }
@@ -196,79 +208,5 @@ function setupVideoPlayerListeners() {
                 else { fullscreenBtn.innerHTML = SVG_ICONS.fullscreen; }
             }
         });
-    }
-}
-
-// Internal helper functions for players
-function formatTime(seconds) {
-    if (isNaN(seconds) || seconds < 0) {
-        return '0:00';
-    }
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-}
-
-function updateVideoPlayPauseButton() {
-    if (!videoPlayPauseBtn || !videoPlayer) return;
-    videoPlayPauseBtn.innerHTML = SVG_ICONS.play.replace(/var\(--accent-color\)/g, 'white');
-    if (!videoPlayer.paused) {
-        videoPlayPauseBtn.innerHTML = SVG_ICONS.pause.replace(/var\(--accent-color\)/g, 'white');
-    }
-}
-
-function updateVideoMuteButton() {
-    if (!videoMuteBtn || !videoPlayer) return;
-    videoMuteBtn.innerHTML = SVG_ICONS.soundOn.replace(/var\(--accent-color\)/g, 'white');
-    if (videoPlayer.muted || videoPlayer.volume === 0) {
-        videoMuteBtn.innerHTML = SVG_ICONS.soundOff.replace(/var\(--accent-color\)/g, 'white');
-    }
-    if (videoVolumeBar) {
-        videoVolumeBar.value = videoPlayer.muted ? 0 : videoPlayer.volume;
-    }
-}
-
-function updateVideoTimeDisplay() {
-    if (!videoTimeDisplay || !videoPlayer) return;
-    const currentTime = formatTime(videoPlayer.currentTime);
-    const totalTime = formatTime(videoPlayer.duration);
-    videoTimeDisplay.textContent = `${currentTime} / ${totalTime}`;
-}
-
-function toggleVideoPlayPause() {
-    if (!videoPlayer || !videoPlayer.src) return;
-    if (videoPlayer.paused) {
-        videoPlayer.play().catch(error => {
-            console.error("Video play failed:", error);
-            alert("Browser autoplay policy blocked video playback. Please click the video area to play.");
-            if (videoPlayerContainer) videoPlayerContainer.classList.add('paused');
-        });
-    } else {
-        videoPlayer.pause();
-    }
-}
-
-function handleVideoLoadError(e) {
-    console.error("Video Error:", e);
-    let errorMessage = "An unknown video error occurred.";
-    if (videoPlayer && videoPlayer.error) {
-        switch (videoPlayer.error.code) {
-            case MediaError.MEDIA_ERR_ABORTED: errorMessage = "Video playback aborted."; break;
-            case MediaError.MEDIA_ERR_NETWORK: errorMessage = "A network error caused the video download to fail."; break;
-            case MediaError.MEDIA_ERR_DECODE: errorMessage = "The video format/codec is not supported."; break;
-            case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED: errorMessage = "The video could not be loaded, either because the server or network failed or because the format is not supported."; break;
-        }
-    }
-    alert(`Video playback error: ${errorMessage}. Please try a different file.`);
-    if (videoPlayerContainer) {
-        videoPlayerContainer.classList.remove('video-player-loading');
-        videoPlayerContainer.classList.add('paused');
-    }
-    if (videoPlayer) {
-        if (videoPlayer.src && videoPlayer.src.startsWith('blob:')) {
-            URL.revokeObjectURL(currentVideoObjectURL);
-        }
-        videoPlayer.src = '';
-        currentVideoObjectURL = null;
     }
 }

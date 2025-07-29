@@ -27,7 +27,7 @@ export function init(bodyRef, cursorRef, sparkleContainerRef, toggleUiBtnRef, hi
     hideUiHeading = hideUiHeadingRef;
     restoreUiBtn = restoreUiBtnRef;
     mainHeader = mainHeaderRef;
-    mainContentArea = mainContentAreaRef || getElement('main-content-area'); // Ensure mainContentArea is grabbed if not passed
+    mainContentArea = mainContentAreaRef;
     _playSfxCallback = playSfxFn;
     _clickSoundElement = clickSoundEl;
 
@@ -98,11 +98,23 @@ function setupCursorEffects() {
 
 function setupUiToggle() {
     if (toggleUiBtn) {
+        // Attach toggleUI to the element itself so setTheme can call it
+        toggleUiBtn.toggleUI = (show) => { // Adding the method to the element
+            uiHiddenState = typeof show === 'boolean' ? show : !uiHiddenState;
+
+            if (body) {
+                body.classList.toggle('ui-hidden', uiHiddenState);
+            }
+
+            if (toggleUiBtn) {
+                toggleUiBtn.textContent = uiHiddenState ? "Show UI" : "Hide UI";
+            }
+        };
         toggleUiBtn.addEventListener('click', () => {
             if (_playSfxCallback && _clickSoundElement) {
                 _playSfxCallback(_clickSoundElement);
             }
-            toggleUI();
+            toggleUiBtn.toggleUI(); // Call the attached method
         });
     }
     if (restoreUiBtn) {
@@ -110,7 +122,7 @@ function setupUiToggle() {
             if (_playSfxCallback && _clickSoundElement) {
                 _playSfxCallback(_clickSoundElement);
             }
-            toggleUI(false);
+            if (toggleUiBtn) toggleUiBtn.toggleUI(false); // Call the attached method
         });
     }
     document.addEventListener('keydown', (e) => {
@@ -118,28 +130,13 @@ function setupUiToggle() {
             if (_playSfxCallback && _clickSoundElement) {
                 _playSfxCallback(_clickSoundElement);
             }
-            toggleUI();
+            if (toggleUiBtn) toggleUiBtn.toggleUI(); // Call the attached method
         }
     });
 }
 
 // Exported functions for other modules to use
-export function toggleUI(show) {
-    uiHiddenState = typeof show === 'boolean' ? show : !uiHiddenState;
-
-    if (body) {
-        body.classList.toggle('ui-hidden', uiHiddenState);
-    }
-
-    if (toggleUiBtn) {
-        toggleUiBtn.textContent = uiHiddenState ? "Show UI" : "Hide UI";
-    }
-}
-
-export function setSparkleFrequency(frequency) {
-    currentSparkleFrequency = frequency;
-}
-
+// Exporting the direct state variable and its setter/getter for themes.js
 export function setBackgroundEffectsHidden(hidden) {
     backgroundEffectsHidden = hidden;
 }
@@ -148,10 +145,9 @@ export function getBackgroundEffectsHiddenState() {
     return backgroundEffectsHidden;
 }
 
-export function setUiHiddenState(hidden) {
-    uiHiddenState = hidden;
+export function setSparkleFrequency(frequency) {
+    currentSparkleFrequency = frequency;
 }
 
-export function getUiHiddenState() {
-    return uiHiddenState;
-}
+// NOTE: toggleUI is now exposed via `toggleUiBtn.toggleUI()` in main.js after init.
+// No direct export here to enforce usage through the element itself.

@@ -20,8 +20,9 @@ let filterIntensitySlider;
 // Callbacks/references from other modules
 let _updateBackgroundMusicStateCallback;
 let _getBackgroundEffectsHiddenStateCallback;
-let _setBackgroundEffectsHiddenCallback;
+let _setBackgroundEffectsHiddenCallback; // From ui-elements
 
+// Liminal audio/video track lists (full paths)
 const liminalMusicTracks = [
     "assets/audio/liminalbackgroundmusic1.mp3",
     "assets/audio/liminalbackgroundmusic2.mp3",
@@ -58,9 +59,6 @@ export function init(bodyRef, petalContainerRef, liminalVideoContainerRef, limin
     setupSettingsListeners();
     setupEffectSliders();
     setupFilterControls();
-
-    // Initial theme setting on load
-    setTheme('sakura'); 
 }
 
 function setupSettingsListeners() {
@@ -118,7 +116,8 @@ function setupEffectSliders() {
     }
     if (sparkleFrequencySlider) {
         sparkleFrequencySlider.addEventListener('input', (e) => {
-            sparkleFrequencySlider.currentSparkleFrequency = parseFloat(e.target.value); // Store on the element itself for simplicity
+            // Store on the element itself for simplicity, or pass to UIElements if UIElements manages it globally
+            sparkleFrequencySlider.currentSparkleFrequency = parseFloat(e.target.value);
         });
     }
     if (cardAnimationSpeedSlider) {
@@ -135,7 +134,7 @@ function setupFilterControls() {
             if (!button) return;
             button.addEventListener('click', () => {
                 filterIntensitySlider.currentFilter = button.dataset.filter; // Store on slider for consistency
-                applyFilter(filterIntensitySlider.currentFilter, parseFloat(filterIntensitySlider.value));
+                applyFilter(filterIntensitySlider.currentFilter || 'none', parseFloat(filterIntensitySlider.value));
             });
         });
         filterIntensitySlider.addEventListener('input', (e) => {
@@ -144,7 +143,6 @@ function setupFilterControls() {
         });
     }
 }
-
 
 // Exported function to apply the theme
 export function setTheme(theme) {
@@ -161,28 +159,30 @@ export function setTheme(theme) {
         const isLiminalTheme = (theme === 'liminal');
         const isParticleTheme = (theme === 'sakura' || theme === 'night' || theme === 'starfield' || theme === 'bubbletea');
         
-        // Update the global state for background effects visibility
+        // Manage the global `backgroundEffectsHidden` state (via callback to ui-elements)
         if (isParticleTheme) {
             _setBackgroundEffectsHiddenCallback(false); // Effects are visible by default for these themes
         } else if (isLiminalTheme) {
             _setBackgroundEffectsHiddenCallback(true); // Effects are hidden by default for liminal
         } 
+        // For other scenarios, `backgroundEffectsHidden` retains its value.
 
         // Update background music state (this will handle smooth transitions between background tracks)
         _updateBackgroundMusicStateCallback();
 
         // Manage UI toggle button visibility for Liminal mode
-        if (getElement('toggle-ui-btn') && getElement('hide-ui-heading')) { // Re-check elements just in case
+        const toggleUiBtnEl = getElement('toggle-ui-btn'); // Get element each time
+        const hideUiHeadingEl = getElement('hide-ui-heading'); // Get element each time
+        if (toggleUiBtnEl && hideUiHeadingEl) {
             if (isLiminalTheme) {
-                getElement('toggle-ui-btn').style.display = 'block';
-                getElement('hide-ui-heading').style.display = 'block';
-                // No direct toggleUI here, let the toggle button init/state handle it
+                toggleUiBtnEl.style.display = 'block';
+                hideUiHeadingEl.style.display = 'block';
+                if (toggleUiBtnEl.toggleUI) toggleUiBtnEl.toggleUI(false); // Call toggleUI method if it exists
             } else {
-                getElement('toggle-ui-btn').style.display = 'none';
-                getElement('hide-ui-heading').style.display = 'none';
-                // If UI was hidden from liminal mode, ensure it's shown when leaving
-                if (body.classList.contains('ui-hidden')) {
-                     getElement('toggle-ui-btn').toggleUI(false); // Assuming toggleUI is attached to the element
+                toggleUiBtnEl.style.display = 'none';
+                hideUiHeadingEl.style.display = 'none';
+                if (body.classList.contains('ui-hidden') && toggleUiBtnEl.toggleUI) {
+                     toggleUiBtnEl.toggleUI(false); // Force show UI when leaving liminal mode
                 }
             }
         }
@@ -247,6 +247,7 @@ function createBackgroundEffects(effectType, amount = 50) {
         }
         petalContainer.appendChild(effectElement);
     }
+}
 
 // Internal function for theme module
 function updateAllBackgroundEffects() {

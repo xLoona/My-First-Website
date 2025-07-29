@@ -1,5 +1,5 @@
 // js/core/audio-manager.js
-import { getElement } from '../utils/helpers.js'; // Assuming getElement is in helpers.js
+import { getElement, SVG_ICONS } from '../utils/helpers.js';
 
 let backgroundMusic;
 let liminalBackgroundMusic;
@@ -9,8 +9,19 @@ let clickSoundToggleBtn;
 let clickSound;
 let sparkleSound;
 
+let audioPlayer; // From Players module, but needed for state checks
+let videoPlayer; // From Players module, but needed for state checks
+
 // Internal state for SFX mute, controlled by this module
 let _sfxMuted = false;
+
+// Liminal audio tracks (full paths for AudioManager's direct use)
+const liminalMusicTracks = [
+    "assets/audio/liminalbackgroundmusic1.mp3",
+    "assets/audio/liminalbackgroundmusic2.mp3",
+    "assets/audio/liminalbackgroundmusic3.mp3",
+    "assets/audio/liminalbackgroundmusic4.mp3"
+];
 
 export function init(bgmEl, liminalBgmEl, bgmMuteBtnEl, sfxVolSliderEl, clickSfxToggleBtnEl, clickSfxEl, sparkleSfxEl) {
     backgroundMusic = bgmEl;
@@ -21,13 +32,17 @@ export function init(bgmEl, liminalBgmEl, bgmMuteBtnEl, sfxVolSliderEl, clickSfx
     clickSound = clickSfxEl;
     sparkleSound = sparkleSfxEl;
 
+    // Get references to main audio/video players (these are managed by Players module)
+    audioPlayer = getElement('audio-player');
+    videoPlayer = getElement('custom-video');
+
     setupAudioListeners();
 
     // Set initial loop properties and muted state
     if (backgroundMusic) backgroundMusic.loop = true;
-    if (liminalBackgroundMusic) liminalBackgroundMusic.loop = false; // Looping handled by `ended` event
+    if (liminalBackgroundMusic) liminalBackgroundMusic.loop = false; // Looping handled by `ended` event listener
 
-    // Initial button states
+    // Initial button states (reflect default non-muted)
     if (bgmMuteButton) {
         bgmMuteButton.innerHTML = backgroundMusic && backgroundMusic.muted ? `<span>${SVG_ICONS.soundOff} Unmute</span>` : `<span>${SVG_ICONS.soundOn} Mute</span>`;
         bgmMuteButton.classList.toggle('active', backgroundMusic && backgroundMusic.muted);
@@ -37,10 +52,14 @@ export function init(bgmEl, liminalBgmEl, bgmMuteBtnEl, sfxVolSliderEl, clickSfx
         clickSoundToggleBtn.classList.toggle('active', !_sfxMuted);
     }
     if (sfxVolumeSlider) {
-        // Apply default volume to SFX elements
         const initialSfxVolume = parseFloat(sfxVolumeSlider.value || 0.5);
         if (clickSound) clickSound.volume = initialSfxVolume;
         if (sparkleSound) sparkleSound.volume = initialSfxVolume;
+        // Assuming easter egg SFX also use this slider and are loaded
+        const easterEggRightSfx = getElement('easter-egg-right');
+        const easterEggWrongSfx = getElement('easter-egg-wrong');
+        if (easterEggRightSfx) easterEggRightSfx.volume = initialSfxVolume;
+        if (easterEggWrongSfx) easterEggWrongSfx.volume = initialSfxVolume;
     }
 }
 
@@ -66,7 +85,6 @@ function setupAudioListeners() {
 
             if (clickSound) clickSound.volume = volume;
             if (sparkleSound) sparkleSound.volume = volume;
-            // Assuming easter egg SFX also use this slider
             const easterEggRightSfx = getElement('easter-egg-right');
             const easterEggWrongSfx = getElement('easter-egg-wrong');
             if (easterEggRightSfx) easterEggRightSfx.volume = volume;
@@ -173,7 +191,7 @@ export function fadeAudio(audioElement, direction, duration = 2000) {
  * Handles fading in/out when other players start/stop, and when themes change.
  */
 export async function updateBackgroundMusicState() {
-    const currentThemeClass = body.className.split(' ').find(cls => cls.endsWith('-theme'));
+    const currentThemeClass = getElement('body').className.split(' ').find(cls => cls.endsWith('-theme'));
     const isLiminalTheme = currentThemeClass === 'liminal-theme';
 
     // Check if user's audio/video player is active (takes priority over theme BGM)
@@ -224,32 +242,6 @@ export async function updateBackgroundMusicState() {
     }
 }
 
-
-// Exported functions for other modules
-export function playSfx(audioElement) {
-    if (!audioElement || _sfxMuted) return; // Use internal sfxMuted state
-    if (audioElement.readyState >= 2) {
-        audioElement.volume = parseFloat(sfxVolumeSlider ? sfxVolumeSlider.value : 0.5); // Default to 0.5 if slider missing
-        audioElement.currentTime = 0;
-        audioElement.play().catch(e => console.warn("SFX play failed:", e));
-    }
-}
-
-export async function stopAllAudio() {
-    // This is a shared utility, keep it here and make it stop everything
-    await Promise.all([
-        fadeAudio(backgroundMusic, 'out', 500),
-        fadeAudio(liminalBackgroundMusic, 'out', 500),
-        fadeAudio(audioPlayer, 'out', 500),
-        fadeAudio(videoPlayer, 'out', 500)
-    ]);
-
-    // Ensure all are actually paused and reset after fades
-    if (backgroundMusic) { backgroundMusic.pause(); backgroundMusic.currentTime = 0; backgroundMusic.volume = 0.5; backgroundMusic.loop = true; }
-    if (liminalBackgroundMusic) { liminalBackgroundMusic.pause(); liminalBackgroundMusic.currentTime = 0; liminalBackgroundMusic.volume = 0.5; liminalBackgroundMusic.loop = false; }
-    if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = 0; audioPlayer.volume = 1; audioPlayer.loop = false; URL.revokeObjectURL(currentAudioObjectURL); currentAudioObjectURL = null; audioPlayer.src = ''; }
-    if (videoPlayer) { videoPlayer.pause(); videoPlayer.currentTime = 0; videoPlayer.volume = 1; videoPlayer.loop = false; URL.revokeObjectURL(currentVideoObjectURL); currentVideoObjectURL = null; videoPlayer.src = ''; }
-}
 
 // Export specific audio elements if other modules need direct reference (e.g., for play/pause checks)
 export { audioPlayer, videoPlayer, backgroundMusic, liminalBackgroundMusic, liminalMusicTracks, liminalVideoTracks };
